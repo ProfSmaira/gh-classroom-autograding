@@ -1,0 +1,26 @@
+name: 'Custom Autograding Command Grader'
+description: 'Runs a command and extracts float scores'
+inputs:
+  test-name:
+    description: 'Name of the test'
+    required: true
+  setup-command:
+    description: 'Command to run before the test'
+    required: false
+  command:
+    description: 'Command to run the test'
+    required: true
+  timeout:
+    description: 'Timeout in minutes'
+    required: false
+    default: '10'
+  max-score:
+    description: 'Maximum score for the test (supports floats)'
+    required: false
+    default: '0'
+outputs:
+  result:
+    description: 'Base64 encoded JSON result'
+runs:
+  using: 'node20'
+  main: 'dist/index.js'

@@ -1,0 +1,9 @@
+name: 'Custom Autograding Reporter'
+description: 'Reports float scores to GitHub Classroom'
+inputs:
+  runners:
+    description: 'JSON array of runner results'
+    required: true
+runs:
+  using: 'node20'
+  main: 'dist/index.js'
