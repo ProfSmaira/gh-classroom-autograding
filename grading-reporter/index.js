@@ -1,6 +1,8 @@
 const core = require("@actions/core");
 
 exports.NotifyClassroom = async function NotifyClassroom(runnerResults) {
+    console.log("🚨🚨🚨 O REPORTER NOVO ESTÁ VIVO E RODANDO! 🚨🚨🚨");
+    console.log("DADOS CRUS RECEBIDOS:", JSON.stringify(runnerResults));
     const { totalPoints, maxPoints } = runnerResults.reduce(
         (acc, { results }) => {
             if (!results.max_score) return acc;
