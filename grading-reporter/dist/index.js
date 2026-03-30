@@ -1,6 +1,147 @@
 /******/ (() => { // webpackBootstrap
 /******/ 	var __webpack_modules__ = ({
 
+/***/ 7:
+/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
+
+const { COLORS } = __nccwpck_require__(4899);
+const Table = __nccwpck_require__(7558);
+const { getTotalMaxScore, getTestWeight, getTestScore, totalPercentageReducer, getMaxScoreForTest } = __nccwpck_require__(5433);
+
+function getTableTotals(runnerResults, pushToTable) {
+  const totalMaxScore = getTotalMaxScore(runnerResults);
+
+  return runnerResults.map(({ runner, results }) => {
+    const maxScore = getMaxScoreForTest(results);
+    // const weight = getTestWeight(maxScore, totalMaxScore);
+    const score = getTestScore(results);
+    const testName = runner.trim();
+
+    pushToTable([testName, score, maxScore]);
+
+    return {
+      score,
+      maxScore,
+    };
+  });
+}
+
+function AggregateResults(runnerResults) {
+  try {
+    const table = new Table({
+      head: ["Test Runner Name", "Test Score", "Max Score"],
+      colWidths: [20, 13, 13],
+    });
+
+    const totals = getTableTotals(runnerResults, (row) => table.push(row));
+
+    // const totalPercent = totals.reduce(totalPercentageReducer, 0).toFixed(2) + "%";
+    const totalTestScores = totals.reduce((acc, curr) => acc + curr.score, 0)
+    const totalMaxScores = totals.reduce((acc, curr) => acc + curr.maxScore, 0)
+
+    table.push(["Total: ", `${totalTestScores}`, `${totalMaxScores}`]);
+    
+    console.log(table.toString());
+  } catch (error) {
+    throw new Error(error.message);
+  }
+}
+
+exports.AggregateResults = AggregateResults;
+exports.getTableTotals = getTableTotals;
+
+
+/***/ }),
+
+/***/ 4899:
+/***/ ((__unused_webpack_module, exports) => {
+
+const COLORS = {
+  reset: "\x1b[0m",
+  cyan: "\x1b[36m",
+  green: "\x1b[32m",
+  red: "\x1b[31m",
+  yellow: "\x1b[33m",
+  magenta: "\x1b[35m",
+};
+
+exports.COLORS = COLORS;
+
+
+/***/ }),
+
+/***/ 2949:
+/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
+
+const {COLORS} = __nccwpck_require__(4899)
+const {AggregateResults} = __nccwpck_require__(7)
+const {getTestScore, getMaxScoreForTest} = __nccwpck_require__(5433)
+
+exports.ConsoleResults = function ConsoleResults(runnerResults) {
+  try {
+    let grandTotalPassedTests = 0
+    let grandTotalTests = 0
+
+    runnerResults.forEach(({runner, results}, index) => {
+      // Fun transition to new runner
+      const maxScore = getMaxScoreForTest(results)
+      // const weight = getTestWeight(maxScore, totalMaxScore);
+      const score = getTestScore(results)
+      if (index > 0) {
+        console.log(`${COLORS.magenta}🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀${COLORS.reset}\n`)
+      }
+
+      console.log(`🔄 Processing: ${runner}`)
+      let passedTests = 0
+      const totalTests = results.tests.length
+
+      results.tests.forEach((test) => {
+        if (test.status === 'pass') {
+          passedTests += 1
+          if (test.line_no !== 0) {
+            console.log(`${COLORS.green}✅ ${test.name} - line ${test.line_no}${COLORS.reset}`)
+          } else {
+            console.log(`${COLORS.green}✅ ${test.name}${COLORS.reset}`)
+          }
+        } else if (test.status === 'error') {
+          console.log(`Error: ${test.message || `Failed to run test '${test.name}'`}\n${COLORS.reset}`)
+        } else {
+          if (test.line_no !== 0) {
+            console.log(`${COLORS.red}❌ ${test.name} - line ${test.line_no}${COLORS.reset}`)
+          } else {
+            console.log(`${COLORS.red}❌ ${test.name}${COLORS.reset}`)
+          }
+        }
+        if (test.test_code) {
+          console.log(`Test code:\n${test.test_code}\n`)
+        }
+      })
+
+      // Update grand totals
+      grandTotalPassedTests += passedTests
+      grandTotalTests += totalTests
+
+      // Calculate and display points for the current runner
+      if (maxScore !== 0) {
+        console.log(`Total points for ${runner}: ${score.toFixed(2)}/${maxScore}\n`);
+      }
+    })
+
+    console.log(`${COLORS.magenta}Test runner summary${COLORS.magenta}`)
+
+    // Calculate and display grand total points
+    AggregateResults(runnerResults)
+    console.log(
+      `${COLORS.cyan}🏆 Grand total tests passed: ${grandTotalPassedTests}/${grandTotalTests}${COLORS.reset}\n`,
+    )
+  } catch (error) {
+    throw new Error(error.message)
+  }
+}
+
+
+/***/ }),
+
 /***/ 2131:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
@@ -24937,6 +25078,64 @@ exports["default"] = _default;
 
 /***/ }),
 
+/***/ 476:
+/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
+
+const core = __nccwpck_require__(2939);
+
+exports.NotifyClassroom = async function NotifyClassroom(runnerResults) {
+    console.log("🚨🚨🚨 O REPORTER NOVO ESTÁ VIVO E RODANDO! 🚨🚨🚨");
+    console.log("DADOS CRUS RECEBIDOS:", JSON.stringify(runnerResults));
+    const { totalPoints, maxPoints } = runnerResults.reduce(
+        (acc, { results }) => {
+            if (!results.max_score) return acc;
+
+            acc.maxPoints += Number(results.max_score);
+            results.tests.forEach(({ score }) => {
+                acc.totalPoints += Number(score);
+            });
+
+            return acc;
+        },
+        { totalPoints: 0, maxPoints: 0 }
+    );
+    if (!maxPoints) return;
+
+    const intTotal = Math.round(totalPoints*10);
+    const intMax = Math.round(maxPoints*10);
+
+    const text = `Points ${intTotal}/${intMax}`;
+    const summary = JSON.stringify({ totalPoints: intTotal, maxPoints: intMax });
+
+    console.log(text);
+
+    core.notice(text, {
+        title: "Autograding complete",
+    });
+
+    core.notice(summary, {
+        title: "Autograding report",
+    });
+};
+
+/***/ }),
+
+/***/ 5433:
+/***/ ((module) => {
+
+module.exports = eval("require")("./helpers/test-helpers");
+
+
+/***/ }),
+
+/***/ 7558:
+/***/ ((module) => {
+
+module.exports = eval("require")("cli-table3");
+
+
+/***/ }),
+
 /***/ 2613:
 /***/ ((module) => {
 
@@ -26833,46 +27032,40 @@ module.exports = parseParams
 /******/ 	
 /************************************************************************/
 var __webpack_exports__ = {};
-// This entry need to be wrapped in an IIFE because it uses a non-standard name for the exports (exports).
-(() => {
-var exports = __webpack_exports__;
 const core = __nccwpck_require__(2939);
+const { ConsoleResults } = __nccwpck_require__(2949);
+const { NotifyClassroom } = __nccwpck_require__(476);
 
-exports.NotifyClassroom = async function NotifyClassroom(runnerResults) {
-    console.log("🚨🚨🚨 O REPORTER NOVO ESTÁ VIVO E RODANDO! 🚨🚨🚨");
-    console.log("DADOS CRUS RECEBIDOS:", JSON.stringify(runnerResults));
-    const { totalPoints, maxPoints } = runnerResults.reduce(
-        (acc, { results }) => {
-            if (!results.max_score) return acc;
-
-            acc.maxPoints += Number(results.max_score);
-            results.tests.forEach(({ score }) => {
-                acc.totalPoints += Number(score);
-            });
-
-            return acc;
-        },
-        { totalPoints: 0, maxPoints: 0 }
-    );
-    if (!maxPoints) return;
-
-    const intTotal = Math.round(totalPoints*10);
-    const intMax = Math.round(maxPoints*10);
-
-    const text = `Points ${intTotal}/${intMax}`;
-    const summary = JSON.stringify({ totalPoints: intTotal, maxPoints: intMax });
-
-    console.log(text);
-
-    core.notice(text, {
-        title: "Autograding complete",
+try {
+  const runnerResults = core
+    .getInput("runners")
+    .split(",")
+    .map((runner) => {
+      const encodedResults = process.env[`${runner.trim().toUpperCase()}_RESULTS`];
+      const json = Buffer.from(encodedResults, "base64").toString("utf-8");
+      return { runner, results: JSON.parse(json) };
     });
 
-    core.notice(summary, {
-        title: "Autograding report",
-    });
-};
-})();
+
+  ConsoleResults(runnerResults);
+  NotifyClassroom(runnerResults);
+
+  if (runnerResults.some((r) => r.results.status === "fail")) {
+    core.setFailed("Some tests failed.");
+  } else if (runnerResults.some((r) => r.results.status === 'error')) {
+    core.setFailed("Some tests errored.");
+  }
+} catch (error) {
+  const input = core.getInput("runners");
+  const pattern = /^([a-zA-Z0-9]+,)*[a-zA-Z0-9]+$/
+  if (!pattern.test(input)) {
+    console.error("The runners input must be a comma-separated list of strings.");
+    core.setFailed("The runners input must be a comma-separated list of strings.");
+  } else {
+    console.error(error.message)
+    core.setFailed(error.message);
+  }
+}
 
 module.exports = __webpack_exports__;
 /******/ })()
