@@ -16,12 +16,10 @@ exports.NotifyClassroom = async function NotifyClassroom(runnerResults) {
     );
     if (!maxPoints) return;
 
-    console.log(process.env.TOTAL_POINTS_OVERRIDE)
     maxPoints = process.env.TOTAL_POINTS_OVERRIDE
         ? parseFloat(process.env.TOTAL_POINTS_OVERRIDE)
         : maxPoints;
 
-    console.log(process.env.CAP_AT_MAX)
     const shouldCap = process.env.CAP_AT_MAX === "true";
 
     if(shouldCap && totalPoints > maxPoints) {
