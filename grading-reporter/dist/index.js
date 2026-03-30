@@ -26843,9 +26843,9 @@ exports.NotifyClassroom = async function NotifyClassroom(runnerResults) {
         (acc, { results }) => {
             if (!results.max_score) return acc;
 
-            acc.maxPoints += results.max_score;
+            acc.maxPoints += Number(results.max_score);
             results.tests.forEach(({ score }) => {
-                acc.totalPoints += score;
+                acc.totalPoints += Number(score);
             });
 
             return acc;
@@ -26854,19 +26854,21 @@ exports.NotifyClassroom = async function NotifyClassroom(runnerResults) {
     );
     if (!maxPoints) return;
 
-    const formattedTotal = Number(totalPoints.toFixed(2));
-    const formattedMax = Number(maxPoints.toFixed(2));
+    const intTotal = Math.round(totalPoints*10);
+    const intMax = Math.round(maxPoints*10);
 
-    const text = `Points ${formattedTotal}/${formattedMax}`;
-    const summary = JSON.stringify({ totalPoints: formattedTotal, maxPoints: formattedMax })
+    const text = `Points ${intTotal}/${intMax}`;
+    const summary = JSON.stringify({ totalPoints: intTotal, maxPoints: intMax });
+
+    console.log(text);
 
     core.notice(text, {
         title: "Autograding complete",
-    })
+    });
 
     core.notice(summary, {
         title: "Autograding report",
-    })
+    });
 };
 })();
 
