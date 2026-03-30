@@ -6,7 +6,7 @@
 
 const { COLORS } = __nccwpck_require__(4899);
 const Table = __nccwpck_require__(4863);
-const { getTotalMaxScore, getTestWeight, getTestScore, totalPercentageReducer, getMaxScoreForTest } = __nccwpck_require__(5433);
+const { getTotalMaxScore, getTestWeight, getTestScore, totalPercentageReducer, getMaxScoreForTest } = __nccwpck_require__(6213);
 
 function getTableTotals(runnerResults, pushToTable) {
   const totalMaxScore = getTotalMaxScore(runnerResults);
@@ -75,7 +75,7 @@ exports.COLORS = COLORS;
 
 const {COLORS} = __nccwpck_require__(4899)
 const {AggregateResults} = __nccwpck_require__(7)
-const {getTestScore, getMaxScoreForTest} = __nccwpck_require__(5433)
+const {getTestScore, getMaxScoreForTest} = __nccwpck_require__(6213)
 
 exports.ConsoleResults = function ConsoleResults(runnerResults) {
   try {
@@ -138,6 +138,46 @@ exports.ConsoleResults = function ConsoleResults(runnerResults) {
     throw new Error(error.message)
   }
 }
+
+
+/***/ }),
+
+/***/ 6213:
+/***/ ((__unused_webpack_module, exports) => {
+
+const getMaxScoreForTest = (runnerResult) => runnerResult.max_score || 0;
+
+const getTotalMaxScore = (runnerResults) => {
+  return runnerResults.reduce((acc, { results }) => acc + results.max_score, 0);
+};
+
+const totalPercentageReducer = (acc, { score, weight, maxScore }) => {
+  return acc + ((score || 0) / (maxScore || 1)) * weight;
+};
+
+const getTestScore = (runnerResult) => {
+  const { tests } = runnerResult;
+  const score = runnerResult.tests.reduce((acc, { status }) => {
+    return status === "pass" ? acc + 1 : acc;
+  }, 0);
+
+  return (score / tests.length) * (getMaxScoreForTest(runnerResult) || 0);
+};
+
+const getTestWeight = (maxScore, allMaxScores) => {
+  if (maxScore === 0) {
+    return (0).toFixed(1);
+  }
+  const weight = allMaxScores !== 0 ? (maxScore / allMaxScores) * 100 : 0;
+
+  return Math.round(weight).toFixed(2);
+};
+
+exports.getMaxScoreForTest = getMaxScoreForTest;
+exports.getTotalMaxScore = getTotalMaxScore;
+exports.totalPercentageReducer = totalPercentageReducer;
+exports.getTestScore = getTestScore;
+exports.getTestWeight = getTestWeight;
 
 
 /***/ }),
@@ -27938,14 +27978,6 @@ exports.NotifyClassroom = async function NotifyClassroom(runnerResults) {
         title: "Autograding report",
     });
 };
-
-/***/ }),
-
-/***/ 5433:
-/***/ ((module) => {
-
-module.exports = eval("require")("./helpers/test-helpers");
-
 
 /***/ }),
 
