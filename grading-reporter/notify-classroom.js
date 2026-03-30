@@ -20,24 +20,25 @@ exports.NotifyClassroom = async function NotifyClassroom(runnerResults) {
         { totalPoints: 0, maxPoints: 0 }
     );
 
-    const overrideMaxRaw = process.env.TOTAL_POINTS_OVERRIDE;
-    if (overrideMaxRaw !== undefined && overrideMaxRaw !== "") {
-        const overrideMax = parseFloat(overrideMaxRaw);
-        if (Number.isFinite(overrideMax)) {
-            maxPoints = overrideMax;
-        }
-    }
+    // const overrideMaxRaw = process.env.TOTAL_POINTS_OVERRIDE;
+    // if (overrideMaxRaw !== undefined && overrideMaxRaw !== "") {
+    //     const overrideMax = parseFloat(overrideMaxRaw);
+    //     if (Number.isFinite(overrideMax)) {
+    //         maxPoints = overrideMax;
+    //     }
+    // }
+    //
+    // console.log(maxPoints);
+    // if (!maxPoints) return;
+    //
+    // const shouldCap = process.env.CAP_AT_MAX === "true";
+    //
+    // if(shouldCap && totalPoints > maxPoints) {
+    //     totalPoints = maxPoints;
+    // }
 
-    if (!maxPoints) return;
-
-    const shouldCap = process.env.CAP_AT_MAX === "true";
-
-    if(shouldCap && totalPoints > maxPoints) {
-        totalPoints = maxPoints;
-    }
-
-    const intTotal = Math.round(totalPoints*10);
-    const intMax = Math.round(maxPoints*10);
+    const intTotal = Math.round(totalPoints);
+    const intMax = Math.round(maxPoints);
 
     const text = `Points ${intTotal}/${intMax}`;
     const summary = JSON.stringify({ totalPoints: intTotal, maxPoints: intMax });
