@@ -3,7 +3,7 @@ const core = require("@actions/core");
 exports.NotifyClassroom = async function NotifyClassroom(runnerResults) {
     console.log("🚨🚨🚨 O REPORTER NOVO ESTÁ VIVO E RODANDO! 🚨🚨🚨");
     console.log("DADOS CRUS RECEBIDOS:", JSON.stringify(runnerResults));
-    const { totalPoints, maxPoints } = runnerResults.reduce(
+    let { totalPoints, maxPoints } = runnerResults.reduce(
         (acc, { results }) => {
             if (!results.max_score) return acc;
 
@@ -17,6 +17,16 @@ exports.NotifyClassroom = async function NotifyClassroom(runnerResults) {
         { totalPoints: 0, maxPoints: 0 }
     );
     if (!maxPoints) return;
+
+    maxPoints = process.env.TOTAL_POINTS_OVERRIDE
+        ? parseFloat(process.env.TOTAL_POINTS_OVERRIDE)
+        : maxPoints;
+
+    const shouldCap = process.env.CAP_AT_MAX === "true";
+
+    if(shouldCap && totalPoints > maxPoints) {
+        totalPoints = maxPoints;
+    }
 
     const intTotal = Math.round(totalPoints*10);
     const intMax = Math.round(maxPoints*10);
